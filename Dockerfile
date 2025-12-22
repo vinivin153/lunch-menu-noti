@@ -45,12 +45,8 @@ RUN npm ci --omit=dev
 # Copy built files from builder
 COPY --from=builder /app/dist ./dist
 
-# Create data directory and set permissions
-RUN mkdir -p /app/data && \
-    mkdir -p /app/data/cropped && \
-    chown -R node:node /app/data
+# Create data directory
+RUN mkdir -p /app/data/cropped
 
-# Run as non-root user
-USER node
-
+# Run as root to avoid permission issues with mounted volumes
 CMD ["node", "--env-file=.env", "dist/index.js"]
