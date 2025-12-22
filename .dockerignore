@@ -1,0 +1,34 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Data files (will be mounted as volume)
+data/
+
+# Environment files (will be mounted)
+.env
+
+# Git
+.git/
+.gitignore
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Test files
+*.test.ts
+
+# Documentation
+README.md
+PROJECT_STATUS.md

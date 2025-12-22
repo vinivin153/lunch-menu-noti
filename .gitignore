@@ -1,0 +1,14 @@
+# Node.js
+node_modules/
+dist/
+*.log
+
+# Environment variables
+.env
+
+# Data files
+data/
+
+# OS
+.DS_Store
+Thumbs.db

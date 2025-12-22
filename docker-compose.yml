@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: jcc-lunch-menu
+    restart: always
+    volumes:
+      # Data persistence
+      - ./data:/app/data
+      # Environment variables
+      - ./.env:/app/.env:ro
+    environment:
+      # Timezone from .env will be used
+      - TZ=${TZ:-Asia/Seoul}
+    # Health check (optional)
+    healthcheck:
+      test: ['CMD', 'node', '--version']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s

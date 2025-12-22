@@ -1,0 +1,28 @@
+{
+  "name": "jcc-lunch-menu",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "tsx --env-file=.env src/index.ts",
+    "test": "tsx --env-file=.env src/test/test.ts",
+    "build": "tsc",
+    "start": "node --env-file=.env dist/index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "node-cron": "^4.2.1",
+    "puppeteer": "^24.30.0",
+    "sharp": "^0.33.5"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.1",
+    "@types/node-cron": "^3.0.11",
+    "prettier": "3.7.4",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3"
+  }
+}
