@@ -68,41 +68,36 @@ export async function cropAndSaveWeeklyMenu(imageUrl: string): Promise<Record<st
       fs.mkdirSync(CROPPED_DIR, { recursive: true });
     }
 
-    // 실제 메뉴 영역 좌표
-    const menuStartX = 159;
-    const menuStartY = 81;
-    const menuWidth = 970;
-    const menuHeight = 350;
+    const columnBorders = [122, 330, 538, 746, 954, 1160];
+    const menuStartY = 252;
+    const menuHeight = 340;
+    const borderPadding = 2;
 
-    const columnWidth = 194;
     const days = ['mon', 'tue', 'wed', 'thu', 'fri'];
     const dayNames = ['월요일', '화요일', '수요일', '목요일', '금요일'];
     const savedPaths: Record<string, string> = {};
 
     console.log('✂️  요일별로 이미지 crop 중...');
-    console.log(`   메뉴 영역: x=${menuStartX}, y=${menuStartY}, w=${menuWidth}, h=${menuHeight}`);
-    console.log(`   요일당 너비: ${columnWidth}px\n`);
+    console.log(`   y=${menuStartY}, h=${menuHeight}, 컬럼 경계: ${columnBorders.join(',')}\n`);
 
     for (let i = 0; i < 5; i++) {
-      const left = menuStartX + columnWidth * i;
+      const left = columnBorders[i] + borderPadding;
+      const colWidth = columnBorders[i + 1] - columnBorders[i] - borderPadding;
       const dayKey = days[i];
       const outputPath = path.join(CROPPED_DIR, `weekly-${dayKey}.jpg`);
 
-      // 마지막 요일은 이미지 경계를 넘지 않도록 실제 이미지 너비 기준으로 조정
-      const actualWidth = Math.min(columnWidth, width - left);
-
       await sharp(imageBuffer)
         .extract({
-          left: left,
+          left,
           top: menuStartY,
-          width: actualWidth,
+          width: colWidth,
           height: menuHeight,
         })
         .jpeg({ quality: 90 })
         .toFile(outputPath);
 
       savedPaths[dayKey] = outputPath;
-      console.log(`  ✅ ${dayNames[i]}: x=${left}, w=${actualWidth}`);
+      console.log(`  ✅ ${dayNames[i]}: x=${left}, w=${colWidth}`);
     }
 
     console.log('🎉 모든 요일 이미지 저장 완료!');
