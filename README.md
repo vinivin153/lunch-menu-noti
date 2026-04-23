@@ -82,8 +82,10 @@ jcc-lunch-menu/
 ### Docker Compose 사용 (권장)
 
 ```bash
-docker-compose up -d
+docker compose up -d --build
 ```
+
+> 소스코드를 수정한 뒤에는 `--build` 플래그로 이미지를 재빌드해야 반영됩니다.
 
 ### Docker 직접 실행
 
