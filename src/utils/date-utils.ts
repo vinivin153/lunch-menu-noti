@@ -20,14 +20,14 @@ export function isToday(dateString: string): boolean {
  * @returns 오늘이 범위에 포함되면 true
  */
 export function isThisWeek(weekTitle: string): boolean {
-  // "12/22~12/26 주간메뉴표"에서 "12/22~12/26" 추출
-  const dateRange = weekTitle.split(' ')[0];
-  if (!dateRange || !dateRange.includes('~')) {
+  // "12/22~12/26 주간메뉴표" 또는 "12/22~12/26주간메뉴표"에서 날짜 범위 추출
+  const match = weekTitle.match(/(\d{1,2}\/\d{1,2})\s*~\s*(\d{1,2}\/\d{1,2})/);
+  if (!match) {
     return false;
   }
 
-  // 시작일과 종료일 추출
-  const [startDateStr, endDateStr] = dateRange.split('~');
+  const startDateStr = match[1];
+  const endDateStr = match[2];
   const [startMonth, startDay] = startDateStr.split('/').map(Number);
   const [endMonth, endDay] = endDateStr.split('/').map(Number);
 
