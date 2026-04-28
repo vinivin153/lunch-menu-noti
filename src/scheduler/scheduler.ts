@@ -129,11 +129,11 @@ async function executeCheck(isFirstCheck: boolean) {
  */
 function isTodayMenu(title: string): boolean {
   // "👩‍🍳12/22(일)" 형식에서 "12/22" 추출
-  const match = title.match(/(\d{1,2}\/\d{1,2})/);
+  const match = title.match(/(\d{1,2}\s*\/\s*\d{1,2})/);
   if (!match) {
     return false;
   }
 
-  const dateString = match[1];
+  const dateString = match[1].replace(/\s+/g, '');
   return isToday(dateString);
 }
