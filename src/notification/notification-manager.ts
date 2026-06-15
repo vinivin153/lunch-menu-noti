@@ -39,7 +39,7 @@ export async function sendCroppedImage(): Promise<void> {
 
   // 4. Google Chat으로 전송
   const post: Post = {
-    title: `오늘의 메뉴 (크롭)`,
+    title: `오늘의 메뉴`,
     description: '',
     images: [croppedImageUrl],
     isPinned: false,
