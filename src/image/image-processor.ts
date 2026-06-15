@@ -63,26 +63,81 @@ export async function cropAndSaveWeeklyMenu(imageUrl: string): Promise<Record<st
 
     console.log(`📐 이미지 크기: ${width}x${height}`);
 
+    // [추가] 픽셀 분석을 통해 자동으로 표의 경계선 찾기
+    const { data } = await image.grayscale().raw().toBuffer({ resolveWithObject: true });
+    
+    // 1. 가로선 분석 (Y축)
+    const rowBrightness = [];
+    for (let y = 0; y < height; y++) {
+      let sum = 0;
+      for (let x = 0; x < width; x++) sum += data[y * width + x];
+      rowBrightness.push(sum / width);
+    }
+
+    // 2. 세로선 분석 (X축)
+    const colBrightness = [];
+    for (let x = 0; x < width; x++) {
+      let sum = 0;
+      for (let y = 0; y < height; y++) sum += data[y * width + x];
+      colBrightness.push(sum / height);
+    }
+
+    const THRESHOLD = 165; 
+    
+    // Y축 선분 후보 찾기
+    const possibleYLines = [];
+    for (let y = 1; y < height - 1; y++) {
+      if (rowBrightness[y] < THRESHOLD && rowBrightness[y] < rowBrightness[y-1] && rowBrightness[y] < rowBrightness[y+1]) {
+        possibleYLines.push(y);
+      }
+    }
+    const sortedY = possibleYLines.filter((val, i, arr) => i === 0 || val - arr[i-1] > 10);
+
+    // X축 선분 후보 찾기
+    const possibleXLines = [];
+    for (let x = 1; x < width - 1; x++) {
+      if (colBrightness[x] < THRESHOLD && colBrightness[x] < colBrightness[x-1] && colBrightness[x] < colBrightness[x+1]) {
+        possibleXLines.push(x);
+      }
+    }
+    const sortedX = possibleXLines.filter((val, i, arr) => i === 0 || val - arr[i-1] > 50);
+
+    // 메뉴 영역 결정
+    // 상단 제목 영역(보통 100px 위쪽)을 제외하고 첫 번째로 발견되는 선을 시작점으로 잡습니다.
+    const menuStartY = sortedY.find(y => y > 150) || 252;
+    // 그 다음 선을 끝점으로 잡거나, 기본 높이(340)를 사용합니다.
+    const menuEndDate = sortedY.find(y => y > menuStartY + 300) || (menuStartY + 340);
+    const menuHeight = menuEndDate - menuStartY;
+
+    // 요일 경계 결정 (적어도 6개의 선이 필요함)
+    // 분석된 선이 부족하면 기존 기본값을 사용
+    let columnBorders = sortedX;
+    if (columnBorders.length < 6) {
+      console.log('⚠️ 자동 분석된 세로선이 부족하여 기본 좌표를 사용합니다.');
+      columnBorders = [122, 330, 538, 746, 954, 1160];
+    }
+
     // cropped 디렉토리 생성
     if (!fs.existsSync(CROPPED_DIR)) {
       fs.mkdirSync(CROPPED_DIR, { recursive: true });
     }
 
-    const columnBorders = [122, 330, 538, 746, 954, 1160];
-    const menuStartY = 252;
-    const menuHeight = 340;
     const borderPadding = 2;
-
     const days = ['mon', 'tue', 'wed', 'thu', 'fri'];
     const dayNames = ['월요일', '화요일', '수요일', '목요일', '금요일'];
     const savedPaths: Record<string, string> = {};
 
-    console.log('✂️  요일별로 이미지 crop 중...');
-    console.log(`   y=${menuStartY}, h=${menuHeight}, 컬럼 경계: ${columnBorders.join(',')}\n`);
+    console.log('✂️  자동 분석 좌표로 이미지 crop 중...');
+    console.log(`   y=${menuStartY}, h=${menuHeight}, x_borders=${columnBorders.join(',')}`);
 
     for (let i = 0; i < 5; i++) {
-      const left = columnBorders[i] + borderPadding;
-      const colWidth = columnBorders[i + 1] - columnBorders[i] - borderPadding;
+      // columnBorders에서 실제 데이터 영역(보통 두 번째 칸부터 각 요일)을 찾습니다.
+      // 인덱스 1부터가 월요일 칸의 시작인 경우가 많습니다 (인덱스 0은 식단구분 칸)
+      const left = columnBorders[i + 1] + borderPadding;
+      const colWidth = columnBorders[i + 2] - columnBorders[i + 1] - borderPadding;
+      
+      if (!colWidth || colWidth <= 0) continue;
+
       const dayKey = days[i];
       const outputPath = path.join(CROPPED_DIR, `weekly-${dayKey}.jpg`);
 
@@ -93,7 +148,7 @@ export async function cropAndSaveWeeklyMenu(imageUrl: string): Promise<Record<st
           width: colWidth,
           height: menuHeight,
         })
-        .jpeg({ quality: 90 })
+        .jpeg({ quality: 95 })
         .toFile(outputPath);
 
       savedPaths[dayKey] = outputPath;

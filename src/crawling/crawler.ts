@@ -55,10 +55,18 @@ async function getNewWeeklyMenu(page: any, savedWeeklyMenu?: string): Promise<Po
     const thumbElements = pinnedCard.querySelectorAll('.wrap_fit_thumb');
 
     thumbElements.forEach((thumb: any) => {
+      // 1. style.backgroundImage 방식
       const style = thumb.style.backgroundImage;
       const urlMatch = style.match(/url\(["']?(.+?)["']?\)/);
       if (urlMatch && urlMatch[1]) {
         images.push(urlMatch[1]);
+        return;
+      }
+
+      // 2. img 태그 방식
+      const img = thumb.querySelector('img');
+      if (img && img.src) {
+        images.push(img.src);
       }
     });
 
@@ -120,10 +128,18 @@ async function getNewDailyMenu(page: any, savedDailyMenu?: string): Promise<Post
       const thumbElements = card.querySelectorAll('.wrap_fit_thumb');
 
       thumbElements.forEach((thumb: any) => {
+        // 1. style.backgroundImage 방식
         const style = thumb.style.backgroundImage;
         const urlMatch = style.match(/url\(["']?(.+?)["']?\)/);
         if (urlMatch && urlMatch[1]) {
           images.push(urlMatch[1]);
+          return;
+        }
+
+        // 2. img 태그 방식
+        const img = thumb.querySelector('img');
+        if (img && img.src) {
+          images.push(img.src);
         }
       });
 
